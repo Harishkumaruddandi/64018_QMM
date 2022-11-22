@@ -1,0 +1,80 @@
+---
+title: "Assignment 6"
+author: "Harish Kumar Uddandi"
+date: "2022-11-21"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Creating the  LP Model for an estimate of the number of workers needed each day of the week and packaged handled as the shift , days off  and wages, teh manager of AP hub in cleveland  is concered as: 
+The problem can be expressed in the following LP model:  
+  
+  $\textbf{MIN } Z = 775x_1 + 800x_2 + 800x_3 + 800x_4 + 800x_5 + 775x_6 + 750x_7$ 
+  \newline 
+
+*subject to* 
+  \newline 
+
+$$
+x_2 + x_3 + x_4 + x_5 + x_6 \geq 18\\  
+x_3 + x_4 + x_5 + x_6 + x_7 \geq 27 \\ 
+x_1 + x_4 + x_5 + x_6 + x_7 \geq 22 \\ 
+x_1 + x_2 + x_5 + x_6 + x_7 \geq 26 \\ 
+x_1 + x_2 + x_3 + x_6 + x_7 \geq 25\\  
+x_1 + x_2 + x_3 + x_4 + x_7 \geq 21\\  
+x_1 + x_2 + x_3 + x_4 + x_5 \geq 19
+$$
+Non-negative integers$x_i$.  
+
+The estimated workforce size for shift I is shown by $x i$, and Z represents the cost of weekly compensation. The limitations are in place to guarantee that each day of the week receives enough staffing.
+\newline 
+
+*Loading the lpSolveAPI Package*
+  ```{r}
+library("lpSolveAPI")
+```
+
+*Loading the lp file*
+  The model is formulated in the file `AP.lp`.
+```{r}
+AP<- read.lp("AP.lp")
+print(AP)
+```
+
+*The number of employees required on each day of the week is estimated in the table below.*
+  ```{r}
+Workers <- matrix(c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday",
+                            18,27,22,26,25,21,19),ncol=2,byrow = F)
+colnames(Workers) <- c("Day of the week", "Workers Required")
+as.table(Workers)
+```
+*At AP, package handlers are promised a five-day workweek with two straight days off. The handlers make a weekly base salary of $750. Those who work on Saturday or Sunday are compensated with an extra $25 per day. The following are potential shifts and pay rates for package handlers:*
+  ```{r}
+Days_off_and_wages <- matrix(c(1,2,3,4,5,6,7,
+                      "Sunday and Monday","Monday and Tuesday","Tuesday and Wednesday","Wednesday and Thursday","Thursday and Friday","Friday and Saturday","Saturday and Sunday",
+                      "$775","$800","$800","$800","$800","$775","$750"),ncol=3,byrow=F)
+colnames(Days_off_and_wages) <- c("Shift", "Days_Off", "Wage")
+as.table(Days_off_and_wages)
+```
+*Running the lp model*
+  ```{r}
+solve(AP)
+```
+*By receiving 0 as the value, we can conclude that there is a model.*\vspace{3mm}
+\newline 
+
+*With the help of the "get.objective" and "get.variables" functions, it is possible to determine the objective function (total weekly salary expenses) and the number of employees who will work each shift in the best solution.*
+  ```{r}
+get.objective(AP)
+```
+*"$25,675" is the overall cost to the company to ensure that daily labor requirements are met and that total wage expenses are kept to a minimum.*
+  ```{r}
+get.variables(AP)
+```
